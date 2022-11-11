@@ -110,7 +110,9 @@
   background-color: black;
   height: 2px;
 }
-
+.loginPage + span{
+  cursor: pointer;
+}
 .loginPage a{
   text-decoration: none;
 }

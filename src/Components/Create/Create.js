@@ -1,4 +1,4 @@
-import React, { Fragment, useContext, useState } from 'react';
+import React, { Fragment, useContext, useState,useEffect } from 'react';
 import './Create.css';
 import {useHistory} from 'react-router-dom'
 import Header from '../Header/Header';
@@ -12,16 +12,74 @@ const Create = () => {
   const [image,setImage]=useState('');
   const date=new Date()
   const history=useHistory()
-  const handleSubmit=()=>{
-firebase.storage().ref(`/image/${image.name}`).put(image).then(({ref})=>{
-  ref.getDownloadURL().then((url)=>{
-    firebase.firestore().collection('products').add({
-      name,category,price,url,userId:user.uid,createdAt:date.toDateString()
-    })
-    history.push('/')
-  })
-})
+  const [nameErr,setnameErr]=useState('')
+  const [priceErr,setpriceErr]=useState('')
+  const [categoryErr,setcategoryErr]=useState('')
+  const [imageErr,setimageErr]=useState('')
+  function imagevalidation(){
+    if(!image){
+      setimageErr("Image is required");
+      return false;
+    }
+    setimageErr(null)
+    return true;
   }
+  
+  
+  function validateName(){
+    if (!name) {
+      setnameErr("name is required");
+      return false;
+    }
+    else if (name.trim().length < 4) {
+      setnameErr("name have minimum 4 character");
+      return false;
+    } 
+    setnameErr(null);  
+      return true;
+    }
+
+    function validatecategory(){
+      if (!category) {
+        setcategoryErr("Category is required");
+        return false;
+      }else if (category.trim().length < 4) {
+        setcategoryErr("Category have minimum 4 character");
+        return false;
+      } 
+      setcategoryErr(null);  
+      return true;
+    }
+    
+    function pricecheck(){
+      if(!price){
+        setpriceErr("Price is required")
+        return false;
+      }
+      setpriceErr(null);
+      return true;
+    }
+    useEffect(() => {
+      validateName()
+      validatecategory()
+      pricecheck()
+      imagevalidation()
+    }, [name,category,price,image])
+    
+
+    const handleSubmit=()=>{
+    if(!validateName()||!validatecategory()||!pricecheck()||!imagevalidation()) return ;
+
+             firebase.storage().ref(`/image/${image.name}`).put(image).then(({ref})=>{
+          ref.getDownloadURL().then((url)=>{
+              firebase.firestore().collection('products').add({
+                  name,category,price,url,userId:user.uid,createdAt:date.toDateString()
+                })
+                history.push('/')
+              })
+            })
+          }
+  
   return (
     <Fragment>
       <Header />
@@ -39,6 +97,7 @@ firebase.storage().ref(`/image/${image.name}`).put(image).then(({ref})=>{
               name="Name"
               defaultValue="John"
             />
+            {nameErr && <div style={{color:"Red"}}> {nameErr}</div>} 
             <br />
             <label htmlFor="fname">Category</label>
             <br />
@@ -51,19 +110,22 @@ firebase.storage().ref(`/image/${image.name}`).put(image).then(({ref})=>{
               name="category"
               defaultValue="John"
             />
+             {categoryErr && <div style={{color:"Red"}}> {categoryErr}</div>}   
             <br />
             <label htmlFor="fname">Price</label>
             <br />
             <input className="input" type="number" value={price} onChange={(e)=>{SetPrice(e.target.value)}} id="fname" name="Price" />
+            {priceErr && <div style={{color:"Red"}}> {priceErr}</div>}   
             <br />
           
           <br />
-          <img  alt="Posts" width="200px" height="200px" src={image ? URL.createObjectURL(image): ''}></img>
-       
+          {image ? <img  alt="Posts" width="200px" height="200px" src={URL.createObjectURL(image)}></img>:""}  
             <br />
             <input onChange={(e)=>{
-              setImage(e.target.files[0])
+              setImage(e.target.files[0]);
+             
             }} type="file" />
+            {imageErr && <div style={{color:"Red"}}> {imageErr}</div>}   
             <br />
             <button onClick={handleSubmit}  className="uploadBtn">upload and Submit</button>
        

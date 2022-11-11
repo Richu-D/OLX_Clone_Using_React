@@ -7,6 +7,7 @@ import Arrow from '../../assets/Arrow';
 import SellButton from '../../assets/SellButton';
 import SellButtonPlus from '../../assets/SellButtonPlus';
 import { AuthContext, FirebaseContext } from '../../store/Context';
+import Swal from 'sweetalert2'
 function Header() {
   const history=useHistory()
   const {user}=useContext(AuthContext)
@@ -15,7 +16,9 @@ function Header() {
     <div className="headerParentDiv">
       <div className="headerChildDiv">
         <div className="brandName">
+          <Link to={'/'}>
           <OlxLogo></OlxLogo>
+          </Link>
         </div>
         <div className="placeSearch">
           <Search></Search>
@@ -42,17 +45,42 @@ function Header() {
           <hr />
         </div>
         {user && <span onClick={()=>{
-          firebase.auth().signOut();
-          history.push('/login')
-        }}>Logout</span>}
+          Swal.fire({
+            title: 'Are You Sure to Logout ?',
+            type: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#00292e',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Sure',
+            closeOnConfirm: true,
+            closeOnCancel: true
+           }).then((result) => { 
+            console.log(result);
+              if (!result.isConfirmed) return ;
+              firebase.auth().signOut(); history.push('/login')              
+           }) 
+        }} className="link">Logout</span>}
 
+{user ? <Link to="/create" className="link">
         <div className="sellMenu">
           <SellButton></SellButton>
           <div className="sellMenuContent">
             <SellButtonPlus></SellButtonPlus>
-            <span>{user ? <Link to="/create" className="link">Sell</Link> : <Link to="/login" className="link">Sell</Link>}</span>
+            <span>Sell</span>
           </div>
         </div>
+
+</Link>
+: <Link to="/login" className="link">
+  <div className="sellMenu">
+          <SellButton></SellButton>
+          <div className="sellMenuContent">
+            <SellButtonPlus></SellButtonPlus>
+            <span>Sell</span>
+          </div>
+        </div>  
+  </Link>}
+        
       </div>
     </div>
   );
